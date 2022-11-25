@@ -72,7 +72,7 @@ def main():
 
     criterion_xent = CrossEntropyLoss(num_classes=dm.num_train_pids, use_gpu=use_gpu, label_smooth=args.label_smooth)
     criterion_htri = TripletLoss(margin=args.margin)
-    optimizer = init_optimizer(model, **optimizer_kwargs(args))
+    optimizer = init_optimizer(model, args.arch, **optimizer_kwargs(args))
     scheduler = init_lr_scheduler(optimizer, **lr_scheduler_kwargs(args))
 
     if args.resume and check_isfile(args.resume):

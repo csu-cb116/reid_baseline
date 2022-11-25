@@ -6,6 +6,7 @@ import torch.nn as nn
 
 
 def init_optimizer(model,
+                   model_name,
                    optim='adam',  # optimizer choices
                    lr=0.003,  # learning rate
                    weight_decay=5e-4,  # weight decay
@@ -28,8 +29,16 @@ def init_optimizer(model,
             model = model.module
         for name, module in model.named_children():
             if name == 'base':
-                base_params += [p for p in module.parameters()]
-                base_layers.append(name)
+                if model_name == 'hpm':
+                    for sub_name, sub_module in module.named_children():
+                        if sub_name == 'backbone':
+                            base_params += [p for p in sub_module.parameters()]
+                            base_layers.append(sub_name)
+                        else:
+                            new_params += [p for p in sub_module.parameters()]
+                else:
+                    base_params += [p for p in module.parameters()]
+                    base_layers.append(name)
             else:
                 new_params += [p for p in module.parameters()]
         param_groups = [

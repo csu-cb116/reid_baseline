@@ -92,7 +92,7 @@ class HPM(nn.Module):
 
         model_ft = ResNet(layers=[3, 4, 6, 3])
         self.num_ftrs = list(model_ft.layer4)[-1].conv1.in_channels
-        self.features = model_ft
+        self.backbone = model_ft
         # PSP
         # self.psp_pool, self.psp_conv, self.psp_bn, self.psp_relu, self.psp_upsample, self.conv = psp_block(self.num_ftrs)
 
@@ -120,7 +120,7 @@ class HPM(nn.Module):
     def forward(self, x):
         feat_list = []
         logits_list = []
-        feats = self.features(x)  # N, C, H, W
+        feats = self.backbone(x)  # N, C, H, W
         # assert feats.size(2) == 24
         # assert feats.size(-1) == 8
         assert feats.size(2) % self.num_stripes == 0
@@ -133,7 +133,6 @@ class HPM(nn.Module):
         feat_list, logits_list = spp_vertical(feats, self.pcb4_pool_list, self.pcb4_conv_list,
                                               self.pcb4_batchnorm_list, self.pcb4_relu_list, self.pcb4_fc_list, 4,
                                               feat_list, logits_list)
-
         feat_list, logits_list = spp_vertical(feats, self.pcb8_pool_list, self.pcb8_conv_list,
                                               self.pcb8_batchnorm_list, self.pcb8_relu_list, self.pcb8_fc_list, 8,
                                               feat_list, logits_list)
@@ -145,4 +144,4 @@ class HPM(nn.Module):
         for i in param_dict:
             if 'fc' in i:
                 continue
-            self.features.state_dict()[i].copy_(param_dict[i])
+            self.backbone.state_dict()[i].copy_(param_dict[i])
