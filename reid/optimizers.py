@@ -29,7 +29,7 @@ def init_optimizer(model,
             model = model.module
         for name, module in model.named_children():
             if name == 'base':
-                if model_name == 'hpm':
+                if model_name == 'hpm' or model_name == 'rgap':
                     for sub_name, sub_module in module.named_children():
                         if sub_name == 'backbone':
                             base_params += [p for p in sub_module.parameters()]

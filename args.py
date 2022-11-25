@@ -36,9 +36,9 @@ def argument_parser():
     # ************************************************************
     # Optimization options
     # ************************************************************
-    parser.add_argument('--optim', type=str, default='sgd',
+    parser.add_argument('--optim', type=str, default='adam',
                         help='optimization algorithm (see optimizers.py)')
-    parser.add_argument('--lr', default=0.01, type=float,
+    parser.add_argument('--lr', default=0.0003, type=float,
                         help='initial learning rate, default:0.0003 vip_base:0.01 adam:0.0003 sgd:0.1')
     parser.add_argument('--weight-decay', default=5e-04, type=float,
                         help='weight decay, default=5e-04, vip_base:0.1')
@@ -104,7 +104,7 @@ def argument_parser():
     # ************************************************************
     # Architecture
     # ************************************************************
-    parser.add_argument('-a', '--arch', type=str, default='rgap')
+    parser.add_argument('-a', '--arch', type=str, default='hpm')
     parser.add_argument('--last_stride', type=int, default=2)
     parser.add_argument('--no-pretrained', action='store_true',
                         help='do not load pretrained weights')
