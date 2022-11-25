@@ -68,9 +68,9 @@ def argument_parser():
     parser.add_argument('--start-epoch', default=0, type=int,
                         help='manual epoch number (useful when restart)')
 
-    parser.add_argument('--train-batch-size', default=16, type=int,
+    parser.add_argument('--train-batch-size', default=32, type=int,
                         help='training batch size')
-    parser.add_argument('--test-batch-size', default=16, type=int,
+    parser.add_argument('--test-batch-size', default=32, type=int,
                         help='test batch size')
 
     # ************************************************************
@@ -104,7 +104,7 @@ def argument_parser():
     # ************************************************************
     # Architecture
     # ************************************************************
-    parser.add_argument('-a', '--arch', type=str, default='hpm')
+    parser.add_argument('-a', '--arch', type=str, default='rgap')
     parser.add_argument('--last_stride', type=int, default=2)
     parser.add_argument('--no-pretrained', action='store_true',
                         help='do not load pretrained weights')
