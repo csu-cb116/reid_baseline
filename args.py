@@ -104,7 +104,7 @@ def argument_parser():
     # ************************************************************
     # Architecture
     # ************************************************************
-    parser.add_argument('-a', '--arch', type=str, default='hpm')
+    parser.add_argument('-a', '--arch', type=str, default='rgap')
     parser.add_argument('--last_stride', type=int, default=2)
     parser.add_argument('--no-pretrained', action='store_true',
                         help='do not load pretrained weights')
@@ -139,7 +139,7 @@ def argument_parser():
                         help='path to save log and model weights')
     parser.add_argument('--use-cpu', action='store_true',
                         help='use cpu')
-    parser.add_argument('--gpu-devices', default='1', type=str,
+    parser.add_argument('--gpu-devices', default='0', type=str,
                         help='gpu device ids for CUDA_VISIBLE_DEVICES')
 
     parser.add_argument('--visualize-ranks', action='store_true',
