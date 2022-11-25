@@ -135,7 +135,7 @@ def argument_parser():
                         help='manual seed')
     parser.add_argument('--resume', type=str, default='', metavar='PATH',
                         help='resume from a checkpoint')
-    parser.add_argument('--save-dir', type=str, default='log',
+    parser.add_argument('--save-dir', type=str, default='./log',
                         help='path to save log and model weights')
     parser.add_argument('--use-cpu', action='store_true',
                         help='use cpu')
