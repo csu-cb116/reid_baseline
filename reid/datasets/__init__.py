@@ -5,11 +5,13 @@ from __future__ import print_function
 from .vessel_min import Vessel_min
 from .veri import VeRi
 from .vehicleid import VehicleID
+from .Market1501 import Market1501
 
 __imgreid_factory = {
     'veri': VeRi,
     'vehicleID': VehicleID,
-    'vessel_min': Vessel_min
+    'vessel_min': Vessel_min,
+    'market1501': Market1501
 }
 
 

@@ -1,0 +1,1 @@
+from .rga_model import ResNet50_RGA_Model

@@ -13,7 +13,7 @@ def init_lr_scheduler(optimizer,
         return torch.optim.lr_scheduler.StepLR(optimizer, step_size=stepsize[0], gamma=gamma)
 
     elif lr_scheduler == 'multi_step':
-        return torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=stepsize, gamma=gamma)
+        return torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=stepsize, gamma=gamma, last_epoch=-1)
 
     else:
         raise ValueError('Unsupported lr_scheduler: {}'.format(lr_scheduler))

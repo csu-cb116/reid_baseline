@@ -83,7 +83,7 @@ def global_pcb(feats, pool, conv, bn, relu, fc, feat_list=[], logits_list=[]):
 
 
 class HPM(nn.Module):
-    def __init__(self, num_classes, num_stripes=8, local_conv_out_channels=256, avg=False,
+    def __init__(self, num_classes, num_stripes=6, local_conv_out_channels=256, avg=False,
                  **kwargs):
         super(HPM, self).__init__()
 
@@ -133,9 +133,9 @@ class HPM(nn.Module):
         feat_list, logits_list = spp_vertical(feats, self.pcb4_pool_list, self.pcb4_conv_list,
                                               self.pcb4_batchnorm_list, self.pcb4_relu_list, self.pcb4_fc_list, 4,
                                               feat_list, logits_list)
-        feat_list, logits_list = spp_vertical(feats, self.pcb8_pool_list, self.pcb8_conv_list,
-                                              self.pcb8_batchnorm_list, self.pcb8_relu_list, self.pcb8_fc_list, 8,
-                                              feat_list, logits_list)
+        # feat_list, logits_list = spp_vertical(feats, self.pcb8_pool_list, self.pcb8_conv_list,
+        #                                       self.pcb8_batchnorm_list, self.pcb8_relu_list, self.pcb8_fc_list, 8,
+        #                                       feat_list, logits_list)
 
         return logits_list, feat_list
 

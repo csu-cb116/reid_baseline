@@ -7,8 +7,8 @@ def argument_parser():
     # ************************************************************
     # Datasets (general)
     # ************************************************************
-    parser.add_argument('--root', type=str, default='/home/xyc/datasets/',
-                        help='12:/home/project/xyc/datasets/ 184:/home/xyc/datasets/')
+    parser.add_argument('--root', type=str, default='D:/Dataset',
+                        help='12:/home/project/xyc/datasets/ 184:/home/xyc/datasets/  2080ti: D:/Dataset')
     parser.add_argument('--dataset_name', type=str, default='vessel_min',
                         help='source dataset for training(delimited by space)')
     parser.add_argument('-j', '--workers', default=4, type=int,
@@ -16,9 +16,9 @@ def argument_parser():
     # split-id not used
     parser.add_argument('--split-id', type=int, default=0,
                         help='split index (note: 0-based)')
-    parser.add_argument('--height', type=int, default=256,
+    parser.add_argument('--height', type=int, default=384,
                         help='height of an image')
-    parser.add_argument('--width', type=int, default=256,
+    parser.add_argument('--width', type=int, default=128,
                         help='width of an image')
     parser.add_argument('--train-sampler', type=str, default='RandomSampler',
                         help='sampler for trainloader')
@@ -68,9 +68,9 @@ def argument_parser():
     parser.add_argument('--start-epoch', default=0, type=int,
                         help='manual epoch number (useful when restart)')
 
-    parser.add_argument('--train-batch-size', default=32, type=int,
+    parser.add_argument('--train-batch-size', default=64, type=int,
                         help='training batch size')
-    parser.add_argument('--test-batch-size', default=32, type=int,
+    parser.add_argument('--test-batch-size', default=64, type=int,
                         help='test batch size')
 
     # ************************************************************
@@ -78,7 +78,7 @@ def argument_parser():
     # ************************************************************
     parser.add_argument('--lr-scheduler', type=str, default='multi_step',
                         help='learning rate scheduler (see lr_schedulers.py)')
-    parser.add_argument('--stepsize', default=[20, 40], nargs='+', type=int,
+    parser.add_argument('--stepsize', default=[20, 40, 80], nargs='+', type=int,
                         help='stepsize to decay learning rate')
     parser.add_argument('--gamma', default=0.1, type=float,
                         help='learning rate decay')
@@ -104,8 +104,8 @@ def argument_parser():
     # ************************************************************
     # Architecture
     # ************************************************************
-    parser.add_argument('-a', '--arch', type=str, default='rgap')
-    parser.add_argument('--last_stride', type=int, default=2)
+    parser.add_argument('-a', '--arch', type=str, default='apn')
+    parser.add_argument('--last_stride', type=int, default=1)
     parser.add_argument('--no-pretrained', action='store_true',
                         help='do not load pretrained weights')
     parser.add_argument('--neck', type=str, default='bnneck',
@@ -115,7 +115,7 @@ def argument_parser():
     # ************************************************************
     # Test settings
     # ************************************************************
-    parser.add_argument('--load-weights', type=str, default='/home/xyc/Vip_Vreid_base_temp/pretrain/',
+    parser.add_argument('--load-weights', type=str, default='./pretrain/',
                         help='load pretrained weights but ignore layers that don\'t match in size')
     parser.add_argument('--evaluate', action='store_true',
                         help='evaluate only')

@@ -43,15 +43,16 @@ def main():
     if args.use_cpu:
         use_gpu = False
     log_name = 'log_test.txt' if args.evaluate else 'log_train.txt'
-    # time_now = time.strftime("%Y%m%d-%H%M", time.localtime())
-    # args.save_dir = osp.join(args.save_dir, args.arch + "_" + time_now)
-    # logdir = osp.join(args.save_dir, 'checkpoints', log_name)
-    # tbdir = osp.join(args.save_dir, 'tensorboard')
-    # writer = SummaryWriter(tbdir)
-    # sys.stdout = Logger(logdir)
-    writer = SummaryWriter(args.save_dir)
-    logdir = osp.join(args.save_dir, log_name)
+    time_now = time.strftime("%Y%m%d-%H%M", time.localtime())
+    args.save_dir = osp.join(args.save_dir, args.arch + "_" + time_now)
+    logdir = osp.join(args.save_dir, 'checkpoints', log_name)
+    tbdir = osp.join(args.save_dir, 'tensorboard')
+    writer = SummaryWriter(tbdir)
     sys.stdout = Logger(logdir)
+
+    # writer = SummaryWriter(args.save_dir)
+    # logdir = osp.join(args.save_dir, log_name)
+    # sys.stdout = Logger(logdir)
     print('==========\nArgs:{}\n=========='.format(args))
 
     if use_gpu:

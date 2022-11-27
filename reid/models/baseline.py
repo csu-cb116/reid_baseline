@@ -8,13 +8,15 @@ import torch
 from torch import nn
 import os.path as osp
 
-from reid.models.hpm.hpm_module import HPM
-from reid.models.pvt.pvt_v2 import pvt_v2_b1, pvt_v2_b2, pvt_v2_b3, pvt_v2_b4, pvt_v2_b5
-from reid.models.resnet.resnet import ResNet, BasicBlock, Bottleneck
-from reid.models.rga.rga_model import ResNet50_RGA_Model
-from reid.models.rga_pyramid.rga_pyramid import RGA_Pyramid_Model
-from reid.models.vip.Vip import vip_base, vip_small, vip_medium
+from reid.models.APN import APN
+from reid.models.hpm import HPM
+from reid.models.pvt import pvt_v2_b1, pvt_v2_b2, pvt_v2_b3, pvt_v2_b4, pvt_v2_b5
+from reid.models.resnet import ResNet, BasicBlock, Bottleneck
+from reid.models.rga import ResNet50_RGA_Model
+from reid.models.rga_pyramid import RGA_Pyramid_Model
+from reid.models.vip import vip_small, vip_medium, vip_base
 from reid.utils.iotools import check_isfile
+
 
 def weights_init_kaiming(m):
     classname = m.__class__.__name__
@@ -108,6 +110,10 @@ class Baseline(nn.Module):
             self.in_planes = 2048
             model_path = osp.join(model_path, "resnet50-19c8e357.pth")
             self.base = RGA_Pyramid_Model(num_classes, height=height, width=width)
+        elif model_name == 'apn':
+            self.in_planes = 2048
+            model_path = osp.join(model_path, "resnet50-19c8e357.pth")
+            self.base = APN(last_stride=last_stride, level=2)
 
         if model_path and check_isfile(model_path):
             print(f"Load pretrain parameter from: {model_path}")
