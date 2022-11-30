@@ -16,9 +16,9 @@ def argument_parser():
     # split-id not used
     parser.add_argument('--split-id', type=int, default=0,
                         help='split index (note: 0-based)')
-    parser.add_argument('--height', type=int, default=384,
+    parser.add_argument('--height', type=int, default=256,
                         help='height of an image')
-    parser.add_argument('--width', type=int, default=128,
+    parser.add_argument('--width', type=int, default=256,
                         help='width of an image')
     parser.add_argument('--train-sampler', type=str, default='RandomSampler',
                         help='sampler for trainloader')
@@ -41,7 +41,7 @@ def argument_parser():
     parser.add_argument('--lr', default=0.0003, type=float,
                         help='initial learning rate, default:0.0003 vip_base:0.01 adam:0.0003 sgd:0.1')
     parser.add_argument('--weight-decay', default=5e-04, type=float,
-                        help='weight decay, default=5e-04, vip_base:0.1')
+                        help='weight decay, default=5e-04, vip_base:0.1, pvt:0.05')
     parser.add_argument('--staged_lr', default=True, type=bool,
                         help='different lr for different layers')
     # sgd
@@ -68,9 +68,9 @@ def argument_parser():
     parser.add_argument('--start-epoch', default=0, type=int,
                         help='manual epoch number (useful when restart)')
 
-    parser.add_argument('--train-batch-size', default=64, type=int,
+    parser.add_argument('--train-batch-size', default=32, type=int,
                         help='training batch size')
-    parser.add_argument('--test-batch-size', default=64, type=int,
+    parser.add_argument('--test-batch-size', default=32, type=int,
                         help='test batch size')
 
     # ************************************************************
@@ -104,7 +104,8 @@ def argument_parser():
     # ************************************************************
     # Architecture
     # ************************************************************
-    parser.add_argument('-a', '--arch', type=str, default='apn')
+    parser.add_argument('-a', '--arch', type=str, default='pvt_v2_b2',
+                        help='rgap rgapn resnet50 hpm rga vip_small vip_medium apn pvt_v2_b1 pvt_v2_b2 pvt_v2_b3 pvt_v2_b4 pvt_v2_b5 pvt_v2_b6 ')
     parser.add_argument('--last_stride', type=int, default=1)
     parser.add_argument('--no-pretrained', action='store_true',
                         help='do not load pretrained weights')

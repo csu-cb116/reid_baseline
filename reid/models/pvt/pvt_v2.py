@@ -213,12 +213,11 @@ class OverlapPatchEmbed(nn.Module):
 
 
 class PyramidVisionTransformerV2(nn.Module):
-    def __init__(self, img_size=224, patch_size=16, in_chans=3, num_classes=1000, embed_dims=[64, 128, 256, 512],
+    def __init__(self, patch_size=4, img_size=224, in_chans=3, embed_dims=[64, 128, 256, 512],
                  num_heads=[1, 2, 4, 8], mlp_ratios=[4, 4, 4, 4], qkv_bias=False, qk_scale=None, drop_rate=0.,
                  attn_drop_rate=0., drop_path_rate=0., norm_layer=nn.LayerNorm,
                  depths=[3, 4, 6, 3], sr_ratios=[8, 4, 2, 1], num_stages=4, linear=False):
         super().__init__()
-        # self.num_classes = num_classes
         self.depths = depths
         self.num_stages = num_stages
 
@@ -244,8 +243,6 @@ class PyramidVisionTransformerV2(nn.Module):
             setattr(self, f"block{i + 1}", block)
             setattr(self, f"norm{i + 1}", norm)
 
-        # classification head
-        # self.head = nn.Linear(embed_dims[3], num_classes) if num_classes > 0 else nn.Identity()
 
         self.apply(self._init_weights)
 
@@ -271,12 +268,6 @@ class PyramidVisionTransformerV2(nn.Module):
     def no_weight_decay(self):
         return {'pos_embed1', 'pos_embed2', 'pos_embed3', 'pos_embed4', 'cls_token'}  # has pos_embed may be better
 
-    # def get_classifier(self):
-    #     return self.head
-
-    # def reset_classifier(self, num_classes, global_pool=''):
-    #     self.num_classes = num_classes
-    #     self.head = nn.Linear(self.embed_dim, num_classes) if num_classes > 0 else nn.Identity()
 
     def forward_features(self, x):
         B = x.shape[0]
@@ -293,12 +284,21 @@ class PyramidVisionTransformerV2(nn.Module):
                 x = x.reshape(B, H, W, -1).permute(0, 3, 1, 2).contiguous()
 
         return x.mean(dim=1)
+        # return x
 
     def forward(self, x):
         x = self.forward_features(x)
         # x = self.head(x)
 
         return x
+
+    def load_param(self, model_path):
+        # param_dict = torch.load(model_path)
+        self.load_state_dict(torch.load(model_path), strict=False)
+        # for i in param_dict:
+        #     if 'head' in i:
+        #         continue
+        #     self.forward_features.state_dict()[i].copy_(param_dict[i])
 
 
 class DWConv(nn.Module):

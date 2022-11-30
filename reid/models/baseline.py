@@ -13,6 +13,7 @@ from reid.models.hpm import HPM
 from reid.models.pvt import pvt_v2_b1, pvt_v2_b2, pvt_v2_b3, pvt_v2_b4, pvt_v2_b5
 from reid.models.resnet import ResNet, BasicBlock, Bottleneck
 from reid.models.rga import ResNet50_RGA_Model
+from reid.models.rga_apn import RGAPN
 from reid.models.rga_pyramid import RGA_Pyramid_Model
 from reid.models.vip import vip_small, vip_medium, vip_base
 from reid.utils.iotools import check_isfile
@@ -85,9 +86,11 @@ class Baseline(nn.Module):
             self.base = vip_base(in_chans=3, has_last_encoder=False)
         elif model_name == 'pvt_v2_b1':
             self.in_planes = 512
+            model_path = osp.join(model_path, "pvt_v2_b1.pth")
             self.base = pvt_v2_b1()
         elif model_name == 'pvt_v2_b2':
             self.in_planes = 512
+            model_path = osp.join(model_path, "pvt_v2_b2.pth")
             self.base = pvt_v2_b2()
         elif model_name == 'pvt_v2_b3':
             self.in_planes = 512
@@ -114,6 +117,10 @@ class Baseline(nn.Module):
             self.in_planes = 2048
             model_path = osp.join(model_path, "resnet50-19c8e357.pth")
             self.base = APN(last_stride=last_stride, level=2)
+        elif model_name == 'rgapn':
+            self.in_planes = 2048
+            model_path = osp.join(model_path, "resnet50-19c8e357.pth")
+            self.base = RGAPN(height=height, width=width)
 
         if model_path and check_isfile(model_path):
             print(f"Load pretrain parameter from: {model_path}")
@@ -144,10 +151,20 @@ class Baseline(nn.Module):
                 return cls_score_list, feat_list
             else:
                 return torch.cat(feat_list, dim=1)
+        elif self.model_name == 'rgapn':
+            feat1, feat2 = self.base(x)
+            if self.training:
+                x = feat2
+            else:
+                x = feat1
         else:
             x = self.base(x)  # 模型提取特征
-        global_feat = self.gap(x)  # (b, 2048, 1, 1)
-        global_feat = global_feat.view(global_feat.shape[0], -1)  # flatten to (bs, 2048)
+
+        if "pvt" in self.model_name:
+            global_feat = x
+        else:
+            global_feat = self.gap(x)  # (b, 2048, 1, 1)
+            global_feat = global_feat.view(global_feat.shape[0], -1)  # flatten to (bs, 2048)
 
         if self.neck == 'no':
             feat = global_feat

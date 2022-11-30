@@ -45,7 +45,8 @@ def main():
     log_name = 'log_test.txt' if args.evaluate else 'log_train.txt'
     time_now = time.strftime("%Y%m%d-%H%M", time.localtime())
     args.save_dir = osp.join(args.save_dir, args.arch + "_" + time_now)
-    logdir = osp.join(args.save_dir, 'checkpoints', log_name)
+    checkpoint_save_dir = osp.join(args.save_dir, 'checkpoints')
+    logdir = osp.join(args.save_dir, log_name)
     tbdir = osp.join(args.save_dir, 'tensorboard')
     writer = SummaryWriter(tbdir)
     sys.stdout = Logger(logdir)
@@ -91,7 +92,7 @@ def main():
         if args.visualize_ranks:
             visualize_ranked_results(
                 distmat, (queryloader, galleryloader),
-                save_dir=osp.join(args.save_dir, 'ranked_results', args.dataset_name),
+                save_dir=osp.join(checkpoint_save_dir, 'ranked_results', args.dataset_name),
                 topk=20
             )
 
@@ -134,7 +135,7 @@ def main():
                 'epoch': epoch + 1,
                 'arch': args.arch,
                 'optimizer': optimizer.state_dict(),
-            }, args.save_dir, is_best=is_best)
+            }, checkpoint_save_dir, is_best=is_best)
 
     elapsed = round(time.time() - time_start)
     elapsed = str(datetime.timedelta(seconds=elapsed))
