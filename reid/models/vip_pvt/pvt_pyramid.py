@@ -264,8 +264,8 @@ class PyramidVisionTransformerV2_AttentionPyramid(nn.Module):
         self.apply(self._init_weights)
 
     def _upsample_add(self, x, y):
-        _,_,H,W = y.size()
-        return F.upsample(x, size=(H,W), mode='bilinear') + y
+        _, _, H, W = y.size()
+        return F.upsample(x, size=(H, W), mode='bilinear') + y
 
     def _init_weights(self, m):
         if isinstance(m, nn.Linear):
@@ -292,7 +292,6 @@ class PyramidVisionTransformerV2_AttentionPyramid(nn.Module):
     def forward_features(self, x):
         B = x.shape[0]
         feats = []
-        cls_scores = []
         for i in range(self.num_stages):
             patch_embed = getattr(self, f"patch_embed{i + 1}")
             block = getattr(self, f"block{i + 1}")
@@ -301,18 +300,29 @@ class PyramidVisionTransformerV2_AttentionPyramid(nn.Module):
             for blk in block:
                 x = blk(x, H, W)
             x = norm(x)
-            feat = x.mean(dim=1)
-            feats.append(feat)
-            if i != self.num_stages - 1:
-                x = x.reshape(B, H, W, -1).permute(0, 3, 1, 2).contiguous()
+            x = x.reshape(B, H, W, -1).permute(0, 3, 1, 2).contiguous()
+            feats.append(x)
 
         # return x.mean(dim=1)
         return feats
 
     def forward(self, x):
-        x = self.forward_features(x)
-
-        return x
+        # Bottom-up
+        feats = self.forward_features(x)
+        c1 = feats[0]
+        c2 = feats[1]
+        c3 = feats[2]
+        c4 = feats[3]
+        # Top-down
+        p4 = self.toplayer(c4)
+        p3 = self._upsample_add(p4, self.latlayer1(c3))
+        p2 = self._upsample_add(p3, self.latlayer2(c2))
+        p1 = self._upsample_add(p2, self.latlayer3(c1))
+        # Smooth
+        p3 = self.smooth1(p3)
+        p2 = self.smooth2(p2)
+        p1 = self.smooth3(p1)
+        return [p1, p2, p3, p4]
 
     def load_param(self, model_path):
         # param_dict = torch.load(model_path)
