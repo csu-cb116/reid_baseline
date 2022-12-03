@@ -152,48 +152,48 @@ class APN(nn.Module):
 
         # pdb.set_trace()
         x = self.base_1(x)
-        if self.level > 2:
-            x = self.att_ss1(x)
-            x = self.BN_1(x)
-        if self.level > 1:
-            x = self.att_s1(x)
-            x = self.BN1(x)
-        if self.level > 0:
-            y = self.att1(x)
-            x = x * y.expand_as(x)
+        # if self.level > 2:
+        #     x = self.att_ss1(x)
+        #     x = self.BN_1(x)
+        # if self.level > 1:
+        #     x = self.att_s1(x)
+        #     x = self.BN1(x)
+        # if self.level > 0:
+        #     y = self.att1(x)
+        #     x = x * y.expand_as(x)
 
         x = self.base_2(x)
-        if self.level > 2:
-            x = self.att_ss2(x)
-            x = self.BN_2(x)
-        if self.level > 1:
-            x = self.att_s2(x)
-            x = self.BN2(x)
-        if self.level > 0:
-            y = self.att2(x)
-            x = x * y.expand_as(x)
+        # if self.level > 2:
+        #     x = self.att_ss2(x)
+        #     x = self.BN_2(x)
+        # if self.level > 1:
+        #     x = self.att_s2(x)
+        #     x = self.BN2(x)
+        # if self.level > 0:
+        #     y = self.att2(x)
+        #     x = x * y.expand_as(x)
 
         x = self.base_3(x)
-        if self.level > 2:
-            x = self.att_ss3(x)
-            x = self.BN_3(x)
-        if self.level > 1:
-            x = self.att_s3(x)
-            x = self.BN3(x)
-        if self.level > 0:
-            y = self.att3(x)
-            x = x * y.expand_as(x)
+        # if self.level > 2:
+        #     x = self.att_ss3(x)
+        #     x = self.BN_3(x)
+        # if self.level > 1:
+        #     x = self.att_s3(x)
+        #     x = self.BN3(x)
+        # if self.level > 0:
+        #     y = self.att3(x)
+        #     x = x * y.expand_as(x)
 
         x = self.base_4(x)
-        if self.level > 2:
-            x = self.att_ss4(x)
-            x = self.BN_4(x)
-        if self.level > 1:
-            x = self.att_s4(x)
-            x = self.BN4(x)
-        if self.level > 0:
-            y = self.att4(x)
-            x = x * y.expand_as(x)
+        # if self.level > 2:
+        #     x = self.att_ss4(x)
+        #     x = self.BN_4(x)
+        # if self.level > 1:
+        #     x = self.att_s4(x)
+        #     x = self.BN4(x)
+        # if self.level > 0:
+        #     y = self.att4(x)
+        #    x = x * y.expand_as(x)
 
         x = self.base_5(x)
         if self.level > 2:

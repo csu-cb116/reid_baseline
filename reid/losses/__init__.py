@@ -14,7 +14,13 @@ def DeepSupervision(criterion, xs, y):
     - y: ground truth
     """
     loss = 0.
-    for x in xs:
-        loss += criterion(x, y)
-    loss /= len(xs)
+    for i in range(len(xs)):
+        if i == len(xs) - 1:
+            ratio = 0.7
+        else:
+            ratio = 0.3 / (len(xs)-1)
+        loss += ratio * criterion(xs[i], y)
+    # for x in xs:
+    #     loss += criterion(x, y)
+    # loss /= len(xs)
     return loss

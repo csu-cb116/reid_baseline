@@ -34,11 +34,20 @@ def save_checkpoint(state, save_dir, is_best=False, remove_module_from_keys=Fals
     torch.save(state, fpath)
     print('Checkpoint saved to "{}"'.format(fpath))
 
+def remove_fc(state_dict):
+    """Remove the fc layer parameters from state_dict."""
+    # for key, value in state_dict.items():
+    for key, value in list(state_dict['state_dict'].items()):
+        if "classifier" in key or "fc" in key:
+            del state_dict['state_dict'][key]
+    return state_dict
 
-def resume_from_checkpoint(ckpt_path, model, optimizer=None):
+def resume_from_checkpoint(ckpt_path, model, optimizer=None, is_eval=False):
     print('Loading checkpoint from "{}"'.format(ckpt_path))
     ckpt = torch.load(ckpt_path)
-    model.load_state_dict(ckpt['state_dict'])
+    if is_eval:
+        ckpt = remove_fc(ckpt)
+    model.load_state_dict(ckpt['state_dict'], strict=False)
     print('Loaded model weights')
     if optimizer is not None:
         optimizer.load_state_dict(ckpt['optimizer'])
@@ -126,7 +135,7 @@ def accuracy(output, target, topk=(1,)):
         batch_size = target.size(0)
 
         if isinstance(output, (tuple, list)):
-            output = output[0]
+            output = output[-1]
 
         _, pred = output.topk(maxk, 1, True, True)
         pred = pred.t()

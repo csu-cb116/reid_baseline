@@ -59,7 +59,7 @@ class Vessel_min(BaseImageDataset):
                 count += 1
             new_vid = vid_c[vid]  # relabel
             imgid = line.split(' ')[0]
-            img_path = osp.join(self.imgs_dir, imgid+".jpg")
+            img_path = osp.join(self.imgs_dir, imgid + ".jpg")
             camid = new_vid
             dataset.append((img_path, new_vid, camid))
 
@@ -71,20 +71,21 @@ class Vessel_min(BaseImageDataset):
             return dataset
         else:
             random.shuffle(dataset)
-            count = {}
+            dic_count = {}
             vid_container = set()
             query = []
             gallery = []
             for sample1 in dataset:  # 统计每个id的图片数量
-                if sample1[1] not in count.keys():
-                    count[sample1[1]] = 1
+                if sample1[1] not in dic_count.keys():
+                    dic_count[sample1[1]] = 1
                 else:
-                    count[sample1[1]] += 1
+                    dic_count[sample1[1]] += 1
             for sample in dataset:  # 仅使用图片数量不少于2的船舶ID
-                if count[sample[1]] > 1:
+                if dic_count[sample[1]] > 1:
                     if sample[1] not in vid_container:
                         vid_container.add(sample[1])
                         query.append(sample)  # 每个ID仅有一张图片被放入query中
+                        # print(sample[0])
                     else:
                         # query.append(sample)
                         gallery.append(sample)

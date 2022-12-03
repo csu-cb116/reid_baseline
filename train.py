@@ -12,6 +12,7 @@ import warnings
 import torch
 import torch.nn as nn
 import torch.backends.cudnn as cudnn
+import torch.nn.functional as F
 
 from args import argument_parser, dataset_kwargs, optimizer_kwargs, lr_scheduler_kwargs
 from reid.data_manager import ImageDataManager
@@ -44,7 +45,7 @@ def main():
         use_gpu = False
     log_name = 'log_test.txt' if args.evaluate else 'log_train.txt'
     time_now = time.strftime("%Y%m%d-%H%M", time.localtime())
-    args.save_dir = osp.join(args.save_dir, args.arch + "_" + time_now)
+    args.save_dir = osp.join(args.save_dir, "train", args.arch + "_" + time_now)
     checkpoint_save_dir = osp.join(args.save_dir, 'checkpoints')
     logdir = osp.join(args.save_dir, log_name)
     tbdir = osp.join(args.save_dir, 'tensorboard')
@@ -256,11 +257,15 @@ def test(model, queryloader, galleryloader, use_gpu, ranks=[1, 5, 10, 20], retur
     print('=> BatchTime(s)/BatchSize(img): {:.3f}/{}'.format(batch_time.avg, args.test_batch_size))
 
     m, n = qf.size(0), gf.size(0)
-    distmat = torch.pow(qf, 2).sum(dim=1, keepdim=True).expand(m, n) + \
-              torch.pow(gf, 2).sum(dim=1, keepdim=True).expand(n, m).t()
-    distmat.addmm_(qf, gf.t(), beta=1, alpha=-2)
-    distmat = distmat.numpy()
-
+    # distmat = torch.pow(qf, 2).sum(dim=1, keepdim=True).expand(m, n) + \
+    #           torch.pow(gf, 2).sum(dim=1, keepdim=True).expand(n, m).t()
+    # distmat.addmm_(qf, gf.t(), beta=1, alpha=-2)
+    # distmat = distmat.numpy()
+    qf = F.normalize(qf, p=2, dim=1)
+    gf = F.normalize(gf, p=2, dim=1)
+    # dist_m = 1 - torch.mm(qf, gf.t())
+    dist_m = torch.mm(qf, gf.t())
+    distmat = dist_m.cpu().numpy()  # 余弦相似度
     print('Computing CMC and mAP')
     # cmc, mAP = evaluate(distmat, q_pids, g_pids, q_camids, g_camids, args.target_names)
     cmc, mAP = evaluate(distmat, q_pids, g_pids, q_camids, g_camids)

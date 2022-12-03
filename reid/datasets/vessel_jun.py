@@ -58,8 +58,8 @@ class Vessel_jun(BaseImageDataset):
                 vid_c[vid] = count
                 count += 1
             new_vid = vid_c[vid]  # relabel
-            imgid = line.split(' ')[0]
-            img_path = osp.join(self.imgs_dir, imgid+".jpg")
+            imgid = line.split(' ')[0].split("/")[-1]
+            img_path = osp.join(self.imgs_dir, imgid)
             camid = new_vid
             dataset.append((img_path, new_vid, camid))
 

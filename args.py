@@ -7,7 +7,7 @@ def argument_parser():
     # ************************************************************
     # Datasets (general)
     # ************************************************************
-    parser.add_argument('--root', type=str, default='D:/Dataset',
+    parser.add_argument('--root', type=str, default='/home/xyc/datasets/',
                         help='12:/home/project/xyc/datasets/ 184:/home/xyc/datasets/  2080ti: D:/Dataset')
     parser.add_argument('--dataset_name', type=str, default='vessel_min',
                         help='source dataset for training(delimited by space)')
@@ -40,7 +40,7 @@ def argument_parser():
                         help='optimization algorithm (see optimizers.py)')
     parser.add_argument('--lr', default=0.0003, type=float,
                         help='initial learning rate, default:0.0003 vip_base:0.01 adam:0.0003 sgd:0.1')
-    parser.add_argument('--weight-decay', default=5e-04, type=float,
+    parser.add_argument('--weight-decay', default=0.05, type=float,
                         help='weight decay, default=5e-04, vip_base:0.1, pvt:0.05')
     parser.add_argument('--staged_lr', default=True, type=bool,
                         help='different lr for different layers')
@@ -104,7 +104,7 @@ def argument_parser():
     # ************************************************************
     # Architecture
     # ************************************************************
-    parser.add_argument('-a', '--arch', type=str, default='pvt_v2_b2',
+    parser.add_argument('-a', '--arch', type=str, default='pvt_v2_b2_p',
                         help='rgap rgapn resnet50 hpm rga vip_small vip_medium apn pvt_v2_b1 pvt_v2_b2 pvt_v2_b3 pvt_v2_b4 pvt_v2_b5 pvt_v2_b6 ')
     parser.add_argument('--last_stride', type=int, default=1)
     parser.add_argument('--no-pretrained', action='store_true',
@@ -136,11 +136,13 @@ def argument_parser():
                         help='manual seed')
     parser.add_argument('--resume', type=str, default='', metavar='PATH',
                         help='resume from a checkpoint')
+    parser.add_argument('--checkpoint-dir', type=str, default=r"/home/project/xyc/projects/ViP_VReID_base_temp/log/train/hpm_20221201-1659/checkpoints/model_best.pth",
+                        help='checkpoint for testing')
     parser.add_argument('--save-dir', type=str, default='./log',
                         help='path to save log and model weights')
     parser.add_argument('--use-cpu', action='store_true',
                         help='use cpu')
-    parser.add_argument('--gpu-devices', default='0', type=str,
+    parser.add_argument('--gpu-devices', default='1', type=str,
                         help='gpu device ids for CUDA_VISIBLE_DEVICES')
 
     parser.add_argument('--visualize-ranks', action='store_true',

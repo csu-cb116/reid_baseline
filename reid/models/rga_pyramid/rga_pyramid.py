@@ -77,12 +77,11 @@ class RGA_Pyramid_Model(nn.Module):
                                               self.pcb4_batchnorm_list, self.pcb4_relu_list, self.pcb4_fc_list, 4,
                                               feat_list, logits_list)
 
-        feat_list, logits_list = spp_vertical(feats, self.pcb8_pool_list, self.pcb8_conv_list,
-                                              self.pcb8_batchnorm_list, self.pcb8_relu_list, self.pcb8_fc_list, 8,
-                                              feat_list, logits_list)
+        # feat_list, logits_list = spp_vertical(feats, self.pcb8_pool_list, self.pcb8_conv_list,
+        #                                       self.pcb8_batchnorm_list, self.pcb8_relu_list, self.pcb8_fc_list, 8,
+        #                                       feat_list, logits_list)
 
         return logits_list, feat_list
-        return feat_
 
     def load_param(self, model_path):
         self.backbone.load_param(model_path)
