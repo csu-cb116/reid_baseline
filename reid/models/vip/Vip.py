@@ -376,15 +376,19 @@ class ViP(nn.Module):
 
         B, _, H, W = out.shape
         rpn_tokens, mask = self.rpn_tokens.expand(x.shape[0], -1, -1), None  # 将随机初始化的tensor进行扩充 rpn_tokens即为parts
-        for i in range(self.depth):
-            layer = getattr(self, "layer_{}".format(i))  # getattr函数，获取实例的属性 这里可以理解为 layer = self.layer_i
-            out, rpn_tokens, mask = layer(out, rpn_tokens, mask=mask)  # 进入vip层
+        # for i in range(self.depth):
+        #     layer = getattr(self, "layer_{}".format(i))  # getattr函数，获取实例的属性 这里可以理解为 layer = self.layer_i
+        #     out, rpn_tokens, mask = layer(out, rpn_tokens, mask=mask)  # 进入vip层
+        out1, rpn_tokens1, mask1 = self.layer_0(out, rpn_tokens, mask=mask)
+        out2, rpn_tokens2, mask2 = self.layer_1(out1, rpn_tokens1, mask=mask1)
+        out3, rpn_tokens3, mask3 = self.layer_2(out2, rpn_tokens2, mask=mask2)
+        out4, rpn_tokens4, mask4 = self.layer_3(out3, rpn_tokens3, mask=mask3)
 
         if self.has_last_encoder:
-            out = self.act(out)
+            out = self.act(out4)
             out = out.mean(1)
         else:
-            out = self.last_linear(out)
+            out = self.last_linear(out4)
             out = self.last_norm(out)
             out = self.act(out)
         return out

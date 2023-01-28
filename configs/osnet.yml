@@ -11,4 +11,4 @@ gamma: 0.1
 warmup_iters: 5
 warmup_factor: 0.01
 warmup_method: linear
-arch: vip_small
+arch: osnet

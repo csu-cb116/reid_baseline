@@ -38,7 +38,9 @@ def remove_fc(state_dict):
     """Remove the fc layer parameters from state_dict."""
     # for key, value in state_dict.items():
     for key, value in list(state_dict['state_dict'].items()):
-        if "classifier" in key or "fc" in key:
+        # if "classifier" in key or "fc" in key:
+        #     del state_dict['state_dict'][key]
+        if "classifier" in key:
             del state_dict['state_dict'][key]
     return state_dict
 

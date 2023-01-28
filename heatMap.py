@@ -30,7 +30,16 @@ parser = argument_parser()
 args = parser.parse_args()
 
 
-def getHeatMap(model, target_layers, image_path, save_dir):
+def reshape_transform(tensor, height=8, width=8):
+    result = tensor[:, :, :].reshape(tensor.size(0),
+                                     height, width, tensor.size(2))
+
+    # Bring the channels to the first dimension, like in CNNs.
+    result = result.transpose(2, 3).transpose(1, 2)
+    return result
+
+
+def getHeatMap(model, target_layers, image_path, save_dir, is_transformer=False):
     for img in os.listdir(image_path):
         imgdir = osp.join(image_path, img)
         heatMapName = img.split(".")[0]
@@ -40,7 +49,10 @@ def getHeatMap(model, target_layers, image_path, save_dir):
         input_tensor = preprocess_image(rgb_img, mean=[0.5, 0.5, 0.5],
                                         std=[0.5, 0.5, 0.5])
         # Construct the CAM object once, and then re-use it on many images:
-        cam = GradCAM(model=model, target_layers=target_layers, use_cuda=True)
+        if is_transformer:
+            cam = GradCAM(model=model, target_layers=target_layers, use_cuda=True, reshape_transform=reshape_transform)
+        else:
+            cam = GradCAM(model=model, target_layers=target_layers, use_cuda=True)
 
         # targets = [ClassifierOutputTarget(122)]
         targets = None
@@ -65,6 +77,8 @@ def getHeatMap(model, target_layers, image_path, save_dir):
 
 def main():
     set_random_seed(args.seed)
+    args.arch = "pvt_v2_b2_p"
+    imgdir = "./cam_data_jun"
     if not args.use_avai_gpus:
         os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_devices
     use_gpu = torch.cuda.is_available()
@@ -72,7 +86,7 @@ def main():
         use_gpu = False
     log_name = 'log_test.txt' if args.evaluate else 'log_train.txt'
     time_now = time.strftime("%Y%m%d-%H%M", time.localtime())
-    args.save_dir = osp.join(args.save_dir, args.arch + "_cam_" + time_now)
+    args.save_dir = osp.join(args.save_dir, "heatMap", imgdir[2:], args.arch + "_cam_" + time_now)
     sys.stdout = Logger(osp.join(args.save_dir, log_name))
     print('==========\nArgs:{}\n=========='.format(args))
 
@@ -84,21 +98,41 @@ def main():
 
     print('Initializing image data manager')
     dm = ImageDataManager(use_gpu, **dataset_kwargs(args))
-    model = models.Baseline(num_classes=dm.num_train_pids, last_stride=args.last_stride, model_path=args.load_weights,
-                            neck=args.neck, neck_feat=args.neck_feat, model_name=args.arch)
 
-    # modelpath = "/home/xyc/Vip_Vreid_base_temp/log/vip_small_baseline/model_best.pth"
+    # modelpath = "/home/xyc/Vip_Vreid_base_temp/log/vip_small_rank1_76.9/model_best.pth"
+    # model = models.Baseline(num_classes=dm.num_train_pids, last_stride=args.last_stride, model_path=args.load_weights,
+    #                         neck=args.neck, neck_feat=args.neck_feat, model_name=args.arch, height=args.height,
+    #                         width=args.width)
     # target_layer = [model.base.last_norm]
 
-    modelpath = "/home/xyc/Vip_Vreid_base_temp/log/resnet5020221118-0847/model_best.pth"
-    target_layer = [model.base.layer_3]
+    # modelpath = "/home/xyc/Vip_Vreid_base_temp/log/resnet50_rank1_79.1/model_best.pth"
+    # model = models.Baseline(num_classes=dm.num_train_pids, last_stride=args.last_stride, model_path=args.load_weights,
+    #                         neck=args.neck, neck_feat=args.neck_feat, model_name=args.arch, height=args.height,
+    #                         width=args.width)
+    # target_layer = [model.base.layer3]
+
+    # modelpath = "/home/xyc/Vip_Vreid_base_temp/log/rga_Rank1_82.8/model_best.pth"
+    # model = models.Baseline(num_classes=dm.num_train_pids, last_stride=args.last_stride, model_path=args.load_weights,
+    #                         neck=args.neck, neck_feat=args.neck_feat, model_name=args.arch, height=args.height,
+    #                         width=args.width)
+    # target_layer = [model.base.backbone.rga_att4]
+
+    # modelpath = r"D:\Pycharm_Projects\ViP_VReID_base_temp\log\train\vessel_jun\pvt_v2_b2_20221206-2202\checkpoints\epoch_115.pth"
+    # model = models.Baseline(num_classes=dm.num_train_pids, last_stride=args.last_stride, model_path=args.load_weights,
+    #                         neck=args.neck, neck_feat=args.neck_feat, model_name=args.arch, height=args.height,
+    #                         width=args.width)
+    # target_layer = [model.base.norm4]
+
+    modelpath = "/home/project/xyc/projects/ViP_VReID_base_temp/log/train/vessel_jun/vip_pyramid_20221222-1648/checkpoints/model_best.pth"
+    model = models.Baseline(num_classes=dm.num_train_pids, last_stride=args.last_stride, model_path=args.load_weights,
+                            neck=args.neck, neck_feat=args.neck_feat, model_name=args.arch, height=args.height,
+                            width=args.width)
+    target_layer = [model.base.last_norm]
 
     args.resume = modelpath
     if args.resume and check_isfile(args.resume):
         model.load_state_dict(torch.load(args.resume), strict=False)
-    imgdir = "/home/xyc/Vip_Vreid_base_temp/cam_data/"
-
-    getHeatMap(model, target_layer, imgdir, args.save_dir)
+    getHeatMap(model, target_layer, imgdir, args.save_dir, is_transformer=False)
 
 
 if __name__ == "__main__":

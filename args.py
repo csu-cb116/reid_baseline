@@ -1,15 +1,20 @@
 import argparse
 
+import yaml
+
 
 def argument_parser():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-
+    parser.add_argument('--config', type=str, default=r'./configs/vip_small.yml',
+                        help='12:/home/project/xyc/datasets/ 184:/home/xyc/datasets/  2080ti: D:/Dataset'
+                             '3080ti: /mnt/data/xyc/datasets/')
     # ************************************************************
     # Datasets (general)
     # ************************************************************
-    parser.add_argument('--root', type=str, default='/home/xyc/datasets/',
-                        help='12:/home/project/xyc/datasets/ 184:/home/xyc/datasets/  2080ti: D:/Dataset')
-    parser.add_argument('--dataset_name', type=str, default='vessel_min',
+    parser.add_argument('--root', type=str, default=r'D:/Dataset',
+                        help='12:/home/project/xyc/datasets/ 184:/home/xyc/datasets/  2080ti: D:/Dataset'
+                             '3080ti: /mnt/data/xyc/datasets/')
+    parser.add_argument('--dataset_name', type=str, default='vessel_jun',
                         help='source dataset for training(delimited by space)')
     parser.add_argument('-j', '--workers', default=4, type=int,
                         help='number of data loading workers (tips: 4 or 8 times number of gpus)')
@@ -36,7 +41,7 @@ def argument_parser():
     # ************************************************************
     # Optimization options
     # ************************************************************
-    parser.add_argument('--optim', type=str, default='adam',
+    parser.add_argument('--optim', type=str, default='adamw',
                         help='optimization algorithm (see optimizers.py)')
     parser.add_argument('--lr', default=0.0003, type=float,
                         help='initial learning rate, default:0.0003 vip_base:0.01 adam:0.0003 sgd:0.1')
@@ -78,10 +83,16 @@ def argument_parser():
     # ************************************************************
     parser.add_argument('--lr-scheduler', type=str, default='multi_step',
                         help='learning rate scheduler (see lr_schedulers.py)')
-    parser.add_argument('--stepsize', default=[20, 40, 80], nargs='+', type=int,
+    parser.add_argument('--stepsize', default=[40, 70], nargs='+', type=int,
                         help='stepsize to decay learning rate')
     parser.add_argument('--gamma', default=0.1, type=float,
                         help='learning rate decay')
+    parser.add_argument('--warmup_iters', default=5, type=int,
+                        help='the number of warmup epoch')
+    parser.add_argument('--warmup_factor', default=0.01, type=float,
+                        help='warm up factor')
+    parser.add_argument('--warmup_method', default='linear', type=str,
+                        help='method of warm up, option: constant, linear')
 
     # ************************************************************
     # Cross entropy loss-specific setting
@@ -104,9 +115,9 @@ def argument_parser():
     # ************************************************************
     # Architecture
     # ************************************************************
-    parser.add_argument('-a', '--arch', type=str, default='pvt_v2_b2_p',
+    parser.add_argument('-a', '--arch', type=str, default='vip_small',
                         help='rgap rgapn resnet50 hpm rga vip_small vip_medium apn pvt_v2_b1 pvt_v2_b2 pvt_v2_b3 pvt_v2_b4 pvt_v2_b5 pvt_v2_b6 ')
-    parser.add_argument('--last_stride', type=int, default=1)
+    parser.add_argument('--last_stride', type=int, default=2)
     parser.add_argument('--no-pretrained', action='store_true',
                         help='do not load pretrained weights')
     parser.add_argument('--neck', type=str, default='bnneck',
@@ -136,20 +147,27 @@ def argument_parser():
                         help='manual seed')
     parser.add_argument('--resume', type=str, default='', metavar='PATH',
                         help='resume from a checkpoint')
-    parser.add_argument('--checkpoint-dir', type=str, default=r"/home/project/xyc/projects/ViP_VReID_base_temp/log/train/hpm_20221201-1659/checkpoints/model_best.pth",
+    parser.add_argument('--checkpoint-dir', type=str,
+                        default=r"D:\Pycharm_Projects\ViP_VReID_base_temp\log\train\vessel_jun\vip_small_20221214-1706\checkpoints\epoch_10.pth",
                         help='checkpoint for testing')
     parser.add_argument('--save-dir', type=str, default='./log',
                         help='path to save log and model weights')
     parser.add_argument('--use-cpu', action='store_true',
                         help='use cpu')
-    parser.add_argument('--gpu-devices', default='1', type=str,
+    parser.add_argument('--gpu-devices', default='0', type=str,
                         help='gpu device ids for CUDA_VISIBLE_DEVICES')
 
     parser.add_argument('--visualize-ranks', action='store_true',
                         help='visualize ranked results, only available in evaluation mode')
     parser.add_argument('--use-avai-gpus', action='store_true',
                         help='use available gpus instead of specified devices (useful when using managed clusters)')
+    args, _ = parser.parse_known_args()
+    if args.config:
+        with open(args.config, 'r') as f:
+            cfg = yaml.safe_load(f)
+            parser.set_defaults(**cfg)
     return parser
+
 
 
 def dataset_kwargs(parsed_args):
@@ -201,4 +219,7 @@ def lr_scheduler_kwargs(parsed_args):
         'lr_scheduler': parsed_args.lr_scheduler,
         'stepsize': parsed_args.stepsize,
         'gamma': parsed_args.gamma,
+        'warmup_iters': parsed_args.warmup_iters,
+        'warmup_factor': parsed_args.warmup_factor,
+        'warmup_method': parsed_args.warmup_method,
     }

@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from .vessel_jm import Vessel_jm
 from .vessel_jun import Vessel_jun
 from .vessel_min import Vessel_min
 from .veri import VeRi
@@ -13,7 +14,8 @@ __imgreid_factory = {
     'vehicleID': VehicleID,
     'vessel_jun': Vessel_jun,
     'vessel_min': Vessel_min,
-    'market1501': Market1501
+    'market1501': Market1501,
+    'vessel_jm': Vessel_jm,
 }
 
 

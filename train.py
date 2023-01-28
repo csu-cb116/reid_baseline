@@ -13,6 +13,7 @@ import torch
 import torch.nn as nn
 import torch.backends.cudnn as cudnn
 import torch.nn.functional as F
+import yaml
 
 from args import argument_parser, dataset_kwargs, optimizer_kwargs, lr_scheduler_kwargs
 from reid.data_manager import ImageDataManager
@@ -27,7 +28,7 @@ from reid.utils.visualtools import visualize_ranked_results
 from reid.utils.generaltools import set_random_seed
 from reid.eval_metrics import evaluate
 from reid.optimizers import init_optimizer
-from reid.lr_schedulers import init_lr_scheduler
+from reid.lr_schedulers import init_lr_scheduler, WarmupMultiStepLR
 from tensorboardX import SummaryWriter
 
 # global variables
@@ -45,7 +46,7 @@ def main():
         use_gpu = False
     log_name = 'log_test.txt' if args.evaluate else 'log_train.txt'
     time_now = time.strftime("%Y%m%d-%H%M", time.localtime())
-    args.save_dir = osp.join(args.save_dir, "train", args.arch + "_" + time_now)
+    args.save_dir = osp.join(args.save_dir, "train", args.dataset_name, args.arch + "_" + time_now)
     checkpoint_save_dir = osp.join(args.save_dir, 'checkpoints')
     logdir = osp.join(args.save_dir, log_name)
     tbdir = osp.join(args.save_dir, 'tensorboard')
@@ -78,8 +79,10 @@ def main():
 
     criterion_xent = CrossEntropyLoss(num_classes=dm.num_train_pids, use_gpu=use_gpu, label_smooth=args.label_smooth)
     criterion_htri = TripletLoss(margin=args.margin)
+
     optimizer = init_optimizer(model, args.arch, **optimizer_kwargs(args))
-    scheduler = init_lr_scheduler(optimizer, **lr_scheduler_kwargs(args))
+    # scheduler = init_lr_scheduler(optimizer, **lr_scheduler_kwargs(args))
+    scheduler = WarmupMultiStepLR(optimizer, **lr_scheduler_kwargs(args))
 
     if args.resume and check_isfile(args.resume):
         args.start_epoch = resume_from_checkpoint(args.resume, model, optimizer=optimizer)
@@ -185,29 +188,30 @@ def train(epoch, model, criterion_xent, criterion_htri, optimizer, trainloader, 
         xent_losses.update(xent_loss.item(), pids.size(0))
         htri_losses.update(htri_loss.item(), pids.size(0))
         accs.update(accuracy(outputs, pids)[0])
-
+        current_lr = optimizer.param_groups[0]['lr']
         if (batch_idx + 1) % args.print_freq == 0:
             print('Epoch: [{0}][{1}/{2}]\t'
+                  'lr: {3}\t'
                   'batchTime {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                   'totalLoss {loss.val:.4f} ({loss.avg:.4f})\t'
                   'idLoss {xent.val:.4f} ({xent.avg:.4f})\t'
                   'triLoss {htri.val:.4f} ({htri.avg:.4f})\t'
                   'Acc {acc.val:.2f} ({acc.avg:.2f})\t'.format(
                 epoch + 1, batch_idx + 1, len(trainloader),
+                current_lr,
                 batch_time=batch_time,
                 loss=losses,
                 xent=xent_losses,
                 htri=htri_losses,
                 acc=accs
             ))
-            niter = epoch*len(trainloader) + batch_idx
+            niter = epoch * len(trainloader) + batch_idx
             writer.add_scalar('totalLoss', losses.val, niter)
             writer.add_scalar('idLoss', xent_losses.val, niter)
             writer.add_scalar('triLoss', htri_losses.val, niter)
             writer.add_scalar('Acc', accs.val, niter)
 
         end = time.time()
-
 
 
 def test(model, queryloader, galleryloader, use_gpu, ranks=[1, 5, 10, 20], return_distmat=False):

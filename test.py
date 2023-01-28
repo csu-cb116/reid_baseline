@@ -32,7 +32,7 @@ args = parser.parse_args()
 
 def main():
     global args
-    set_random_seed(args.seed)
+    # set_random_seed(args.seed)
     if not args.use_avai_gpus:
         os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_devices
     use_gpu = torch.cuda.is_available()
@@ -42,7 +42,7 @@ def main():
     time_now = time.strftime("%Y%m%d-%H%M", time.localtime())
     # che = args.checkpoint_dir.split("/")[-1].split(".")[0]
     che = args.checkpoint_dir[-7:-4]
-    args.save_dir = osp.join(args.save_dir, "test", args.arch + "_" + time_now + "_" + che)
+    args.save_dir = osp.join(args.save_dir, "test", args.dataset_name, args.arch + "_" + time_now + "_" + che)
     logdir = osp.join(args.save_dir, log_name)
     sys.stdout = Logger(logdir)
 
@@ -54,7 +54,7 @@ def main():
     else:
         warnings.warn('Currently using CPU, however, GPU is highly recommended')
 
-    for i in range(50):
+    for i in range(10):
         print('Initializing image data manager')
         dm = ImageDataManager(use_gpu, **dataset_kwargs(args))
         trainloader, queryloader, galleryloader = dm.return_dataloaders()

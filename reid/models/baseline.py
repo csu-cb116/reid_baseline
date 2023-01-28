@@ -16,7 +16,9 @@ from reid.models.rga import ResNet50_RGA_Model
 from reid.models.rga_apn import RGAPN
 from reid.models.rga_pyramid import RGA_Pyramid_Model
 from reid.models.vip import vip_small, vip_medium, vip_base
-from reid.models.vip_pvt.pvt_pyramid import pvt_v2_b2_p
+from reid.models.osnet import osnet_x1_0
+from reid.models.vip_pvt import pvt_v2_b2_p
+
 from reid.utils.iotools import check_isfile
 
 
@@ -104,9 +106,9 @@ class Baseline(nn.Module):
             self.in_planes = 512
             self.base = pvt_v2_b5()
         elif model_name == "pvt_v2_b2_p":
-            self.in_planes = 512
+            self.in_planes = 128
             model_path = osp.join(model_path, "pvt_v2_b2.pth")
-            self.base = pvt_v2_b2_p(num_classes=num_classes)
+            self.base = pvt_v2_b2_p()
         elif model_name == 'rga':
             self.in_planes = 2048
             model_path = osp.join(model_path, "resnet50-19c8e357.pth")
@@ -127,6 +129,10 @@ class Baseline(nn.Module):
             self.in_planes = 2048
             model_path = osp.join(model_path, "resnet50-19c8e357.pth")
             self.base = RGAPN(height=height, width=width)
+        elif model_name == 'osnet':
+            self.in_planes = 512
+            model_path = osp.join(model_path, "osnet_x1_0_imagenet.pth")
+            self.base = osnet_x1_0(num_classes=num_classes)
 
         if model_path and check_isfile(model_path):
             print(f"Load pretrain parameter from: {model_path}")
@@ -150,34 +156,6 @@ class Baseline(nn.Module):
             self.bottleneck.apply(weights_init_kaiming)
             self.classifier.apply(weights_init_classifier)
 
-        if self.model_name == "pvt_v2_b2_p":
-            self.bottleneck1 = nn.BatchNorm1d(64)
-            self.bottleneck1.bias.requires_grad_(False)
-            self.bottleneck1.apply(weights_init_kaiming)
-
-            self.classifier1 = nn.Linear(64, self.num_classes, bias=False)
-            self.classifier1.apply(weights_init_classifier)
-
-            self.bottleneck2 = nn.BatchNorm1d(128)
-            self.bottleneck2.bias.requires_grad_(False)
-            self.bottleneck2.apply(weights_init_kaiming)
-
-            self.classifier2 = nn.Linear(128, self.num_classes, bias=False)
-            self.classifier2.apply(weights_init_classifier)
-
-            self.bottleneck3 = nn.BatchNorm1d(320)
-            self.bottleneck3.bias.requires_grad_(False)
-            self.bottleneck3.apply(weights_init_kaiming)
-
-            self.classifier3 = nn.Linear(320, self.num_classes, bias=False)
-            self.classifier3.apply(weights_init_classifier)
-
-            self.bottleneck4 = nn.BatchNorm1d(512)
-            self.bottleneck4.bias.requires_grad_(False)
-            self.bottleneck4.apply(weights_init_kaiming)
-
-            self.classifier4 = nn.Linear(512, self.num_classes, bias=False)
-            self.classifier4.apply(weights_init_classifier)
 
     def forward(self, x):
         if self.model_name == "hpm" or self.model_name == 'rgap':
@@ -186,23 +164,7 @@ class Baseline(nn.Module):
                 return cls_score_list, feat_list
             else:
                 return torch.cat(feat_list, dim=1)
-        elif self.model_name == "pvt_v2_b2_p":
-            feat_list = self.base(x)
-            feats_list = []
-            cls_score_list = []
-            for i in range(len(feat_list)):
-                # if i == len(feat_list) - 1:
-                bottleneck = getattr(self, f"bottleneck{i + 1}")
-                classifier = getattr(self, f"classifier{i + 1}")
-                feat = feat_list[i]
-                feat = bottleneck(feat)
-                feats_list.append(feat)
-                cls = classifier(feat)
-                cls_score_list.append(cls)
-            if self.training:
-                return cls_score_list, feats_list
-            else:
-                return feat_list[-1]
+
         elif self.model_name == 'rgapn':
             feat1, feat2 = self.base(x)
             if self.training:
@@ -228,10 +190,10 @@ class Baseline(nn.Module):
             return cls_score, global_feat  # global feature for triplet losses
         else:
             if self.neck_feat == 'after':
-                print("Test with feature after BN")
+                # print("Test with feature after BN")
                 return feat
             else:
-                print("Test with feature before BN")
+                # print("Test with feature before BN")
                 return global_feat
 
     def load_param(self, trained_path):
